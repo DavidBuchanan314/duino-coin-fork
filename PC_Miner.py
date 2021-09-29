@@ -35,6 +35,8 @@ from locale import LC_ALL, getdefaultlocale, getlocale, setlocale
 from configparser import ConfigParser
 configparser = ConfigParser()
 
+import fastxxhash
+
 
 def handler(signal_received, frame):
     """
@@ -151,17 +153,19 @@ class Algorithms:
 
     def XXHASH(last_h: str, exp_h: str, diff: int,  eff: int):
         time_start = time()
+        nonce = fastxxhash.fastmine(last_h.encode(), int(exp_h, 16))
+        
+        # throttle to 90Gh/s
+        time_elapsed = time() - time_start
+        expected_time = nonce * (1/90000000000)
+        wait_time = expected_time - time_elapsed
+        if wait_time > 0:
+            sleep(wait_time)
+        
+        time_elapsed = time() - time_start
+        hashrate = nonce / time_elapsed
+        return [nonce, hashrate]
 
-        for nonce in range(100 * diff + 1):
-            d_res = xxh64(last_h + str(nonce),
-                          seed=2811).hexdigest()
-
-            if d_res == exp_h:
-                time_elapsed = time() - time_start
-                hashrate = nonce / time_elapsed
-                return [nonce, hashrate]
-
-        return [0, 0]
 
 
 class Client:
