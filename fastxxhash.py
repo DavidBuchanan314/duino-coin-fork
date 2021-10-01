@@ -1,6 +1,7 @@
 # Derived from this implementation of XXHASH64: https://github.com/Cyan4973/xxHash/blob/dev/xxhash.h
 
 from xxhash import xxh64
+from functools import cache
 
 XXH_PRIME64_1 = 0x9E3779B185EBCA87
 XXH_PRIME64_2 = 0xC2B2AE3D27D4EB4F
@@ -77,6 +78,7 @@ def inverse_suffix(h64, buf):
 		h64  ^= (x * XXH_PRIME64_5) & MASK64
 	return h64
 
+@cache
 def premine(data, seed, total_len):
 	if not data:
 		return (seed + XXH_PRIME64_5 + total_len) & MASK64
